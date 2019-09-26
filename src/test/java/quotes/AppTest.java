@@ -3,14 +3,62 @@
  */
 package quotes;
 
+import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import static org.junit.Assert.*;
 
 public class AppTest {
-    @Test public void testAppHasAGreeting() {
-        App classUnderTest = new App();
-        assertNotNull("app should have a greeting", classUnderTest.getGreeting());
+    App test;
+    @Before
+    public void setUp() throws FileNotFoundException {
+        test = new App();
     }
 
+    @Test
+    public void getData() {
+        assertNotNull("Checking that data is not null",
+                test.quote);
+    }
 
+    @Test
+    public void getDataFail() {
+        assertFalse("Checking that data is not null",
+                test.quote == null);
+    }
+
+    @Test
+    public void testIfJSONFileExists() {
+        File testDir = new File("src/main/resources/recentquotes.json");
+        boolean exists = testDir.exists();
+        assertTrue(exists);
+    }
+
+    @Test
+    public void testIfJSONFileExistsFail() {
+        File testDir = new File("src/main/recentquotes.json");
+        boolean exists = testDir.exists();
+        assertFalse(exists);
+    }
+
+    @Test
+    public void randInt() {
+        boolean type = Integer.class.isInstance(test.randInt(0, 10));
+        assertTrue("should be type int",type);
+    }
+
+    @Test
+    public void randIntFail() {
+        boolean type = Integer.class.isInstance(2.5);
+        assertFalse("should not be type int",type);
+    }
+
+    @Test
+    public void testToString() {
+        assertTrue("Checking string length",
+                test.toString().length() > 2);
+    }
 }

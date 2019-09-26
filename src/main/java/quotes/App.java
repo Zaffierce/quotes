@@ -38,10 +38,6 @@ public class App {
         return String.format("The author: %s is quoted:%s",this.quote.author,this.quote.text);
     }
 
-    public String getGreeting() {
-        return "Hello world.";
-    }
-
     public static void main(String[] args) throws FileNotFoundException {
 
         System.out.println("*******************************");
