@@ -5,27 +5,81 @@ package quotes;
 
 import com.google.gson.Gson;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Random;
 
 public class App {
-    Quotes quote;
+    Quote[] quote;
 
     public App() throws FileNotFoundException {
-        getData();
+//        getData();
     }
 
-    public void getData() throws FileNotFoundException {
-        Gson gson = new Gson();
-        Quotes[] dataFromJson = gson.fromJson(new FileReader("src/main/resources/recentquotes.json"), Quotes[].class);
+    public Quote returnQuote() throws IOException {
+        String quote = getQuote();
+        Quote newQuote = convertQuote(quote);
 
-        int randomIndex = randInt(0, dataFromJson.length);
-        while(dataFromJson[randomIndex].author == null || dataFromJson[randomIndex].text == null){
-            randomIndex = randInt(0, dataFromJson.length);
+        if(checkQuote(newQuote)) {
+            saveQuote(newQuote);
         }
-        this.quote = dataFromJson[randomIndex];
+        return newQuote;
     }
+
+    public String getQuote() throws IOException {
+        URL getQuoteUrl = new URL("http://ron-swanson-quotes.herokuapp.com/v2/quotes");
+        HttpURLConnection connection = (HttpURLConnection) getQuoteUrl.openConnection();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        StringBuilder data = new StringBuilder();
+        String line = reader.readLine();
+        while (line != null) {
+            data.append(line);
+            line = reader.readLine();
+        }
+        return data.toString();
+    }
+
+    public Quote convertQuote(String quote) {
+        Quote newQuote = new Quote();
+        newQuote.author = "Ron Swanson";
+        newQuote.text = quote;
+        return newQuote;
+    }
+
+    public void saveQuote(Quote quote) throws IOException {
+        Gson gson = new Gson();
+        try (FileWriter writer = new FileWriter("src/main/resources/savedquotes.json")) {
+            String[] parsedQuote = gson.fromJson(String.valueOf(quote), String[].class);
+            String parsed = gson.toJson(parsedQuote[0]);
+
+            writer.write(parsed);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public boolean checkQuote(Quote newQuote) throws IOException {
+        for (int i = 0; i < this.quote.length; i++) {
+            if (newQuote.text.equals(this.quote[i].text)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+//    public void getData() throws FileNotFoundException {
+//        Gson gson = new Gson();
+//        Quote[] dataFromJson = gson.fromJson(new FileReader("src/main/resources/recentquotes.json"), Quote[].class);
+////        Quote[] dataFromJson = gson.fromJson(new FileReader("src/main/resources/savedquotes.json"), Quote[].class);
+//
+//        int randomIndex = randInt(0, dataFromJson.length);
+//        while(dataFromJson[randomIndex].author == null || dataFromJson[randomIndex].text == null){
+//            randomIndex = randInt(0, dataFromJson.length);
+//        }
+//        this.quote = dataFromJson[randomIndex];
+//    }
 
     public int randInt(int min, int max){
         Random rand = new Random();
@@ -33,15 +87,22 @@ public class App {
         return randomNum;
     }
 
-    @Override
-    public String toString(){
-        return String.format("The author: %s is quoted:%s",this.quote.author,this.quote.text);
-    }
+//    @Override
+//    public String toString(){
+//        return String.format("The author: %s is quoted:%s",this.quote.author,this.quote.text);
+//    }
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args){
+        try {
+//            System.out.println(new App().getQuote());
+            System.out.println(new App().returnQuote());
+//            new App().checkQuote();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
 
-        System.out.println("*******************************");
-        App quoteApp = new App();
-        System.out.println(quoteApp);
+//        System.out.println("*******************************");
+//        App quoteApp = new App();
+//        System.out.println(quoteApp);
     }
 }
